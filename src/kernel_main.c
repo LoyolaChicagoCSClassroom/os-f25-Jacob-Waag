@@ -1,4 +1,3 @@
-
 #include <stdint.h>
 
 #define MULTIBOOT2_HEADER_MAGIC         0xe85250d6
@@ -12,14 +11,22 @@ uint8_t inb (uint16_t _port) {
 }
 
 void main() {
-    unsigned short *vram = (unsigned short*)0xb8000; // Base address of video mem
-    const unsigned char color = 7; // gray text on black background
+    unsigned short *vram = (unsigned short*)0xb8000;
+    const unsigned char color = 7; // gray on black
+    int cursor = 0;
 
     while(1) {
         uint8_t status = inb(0x64);
-
         if(status & 1) {
             uint8_t scancode = inb(0x60);
+
+            // Print scancode as two hex chars for visibility
+            vram[cursor++] = (color << 8) | "0123456789ABCDEF"[scancode >> 4];
+            vram[cursor++] = (color << 8) | "0123456789ABCDEF"[scancode & 0xF];
+            vram[cursor++] = (color << 8) | ' ';
+
+            // Wrap around at bottom of screen
+            if(cursor >= 80 * 25) cursor = 0;
         }
     }
 }
