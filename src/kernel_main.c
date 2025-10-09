@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "io.h"
+#include "io.c"
 
 #define MULTIBOOT2_HEADER_MAGIC         0xe85250d6
 
