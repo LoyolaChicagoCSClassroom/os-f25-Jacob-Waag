@@ -3,13 +3,13 @@
 
 #include <stdint.h>
 
-// Physical page node
+// Linked list node for physical page frames
 struct ppage {
     struct ppage *next;
-    uint32_t physical_addr;
+    void *physical_addr;
 };
 
-// Page Directory and Table Entries (i386)
+// i386 page directory entry
 struct page_directory_entry {
     uint32_t present       : 1;
     uint32_t rw            : 1;
@@ -23,6 +23,7 @@ struct page_directory_entry {
     uint32_t frame         : 20;
 };
 
+// i386 page table entry
 struct page {
     uint32_t present    : 1;
     uint32_t rw         : 1;
@@ -33,7 +34,7 @@ struct page {
     uint32_t frame      : 20;
 };
 
-// Paging functions
+// Paging function prototypes
 void *map_pages(void *vaddr, struct ppage *pglist, struct page_directory_entry *pd);
 void identity_map_kernel(struct page_directory_entry *pd, uint32_t end_kernel);
 void identity_map_stack(struct page_directory_entry *pd);
