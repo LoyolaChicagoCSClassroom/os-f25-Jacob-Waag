@@ -1,9 +1,15 @@
 #include <stdint.h>
+#include "page.h"
 #include "io.c"
 
-#define MULTIBOOT2_HEADER_MAGIC         0xe85250d6
+#define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
 
-const unsigned int multiboot_header[]  __attribute__((section(".multiboot"))) = {MULTIBOOT2_HEADER_MAGIC, 0, 16, -(16+MULTIBOOT2_HEADER_MAGIC), 0, 12};
+const unsigned int multiboot_header[] __attribute__((section(".multiboot"))) = {
+    MULTIBOOT2_HEADER_MAGIC, 0, 16, -(16+MULTIBOOT2_HEADER_MAGIC), 0, 12
+};
+
+// Declare linker-provided symbol for end of kernel binary
+extern uint32_t _end_kernel;
 
 uint8_t inb (uint16_t _port) {
     uint8_t rv;
@@ -12,6 +18,18 @@ uint8_t inb (uint16_t _port) {
 }
 
 void main() {
+    // Set up paging mappings
+    identity_map_kernel(pd, (uint32_t)&_end_kernel);
+    identity_map_stack(pd);
+    identity_map_video(pd);
+
+    loadPageDirectory(pd);
+
+    // Enable Paging by setting bits 0 (PE) and 31 (PG) in CR0
+    asm("mov %cr0, %eax\n"
+        "or $0x80000001, %eax\n"
+        "mov %eax, %cr0");
+
     unsigned short *vram = (unsigned short*)0xb8000;
     const unsigned char color = 7; // gray on black
     int cursor = 0;
