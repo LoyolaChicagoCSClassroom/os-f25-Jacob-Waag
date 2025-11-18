@@ -1,12 +1,23 @@
-#define PS2_STATUS_PORT 0x64
-#define PS2_DATA_PORT   0x60
+#include "io.h"
+#include "rprintf.h"
 
-// Returns nonzero if output buffer is full (scancode ready)
-int is_output_buffer_full() {
-    return inb(PS2_STATUS_PORT) & 0x01;
+void putc(char c);
+
+// Ports
+#define PS2_DATA 0x60
+#define PS2_STATUS 0x64
+
+// Check PS/2 status register
+int ps2_has_data() {
+    return inb(PS2_STATUS) & 0x01; // check OS bit
 }
 
-// Read scancode from PS/2 data port
-uint8_t read_scancode() {
-    return inb(PS2_DATA_PORT);
+// Polling loop
+void keyboard_poll() {
+    while (1) {
+	if (ps2_has_data()) {
+	    uint8_t scancode = inb(PS2_DATA);
+	    esp_printf((func_ptr)putc, "Scancode: %x\n", scancode);
+	}
+    }
 }
