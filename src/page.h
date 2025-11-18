@@ -1,44 +1,45 @@
 #ifndef PAGE_H
 #define PAGE_H
 
-#include <stdint.h>
-
-// Linked list node for physical page frames
 struct ppage {
-    struct ppage *next;
-    void *physical_addr;
+  struct ppage *next;
+  struct ppage *prev;
+  void *physical_addr;
 };
 
-// i386 page directory entry
+// Page directory entry for i386
 struct page_directory_entry {
-    uint32_t present       : 1;
-    uint32_t rw            : 1;
-    uint32_t user          : 1;
-    uint32_t writethru     : 1;
-    uint32_t cachedisabled : 1;
-    uint32_t accessed      : 1;
-    uint32_t pagesize      : 1;
-    uint32_t ignored       : 2;
-    uint32_t os_specific   : 3;
-    uint32_t frame         : 20;
+  unsigned int present : 1;
+  unsigned int rw : 1;
+  unsigned int user : 1;
+  unsigned int writethru : 1;
+  unsigned int cachedisabled : 1;
+  unsigned int accessed : 1;
+  unsigned int reserved : 1;
+  unsigned int pagesize : 1;
+  unsigned int ignored : 1;
+  unsigned int os_specific : 3;
+  unsigned int frame : 20;
 };
 
-// i386 page table entry
+// Page table entry for i386
 struct page {
-    uint32_t present    : 1;
-    uint32_t rw         : 1;
-    uint32_t user       : 1;
-    uint32_t accessed   : 1;
-    uint32_t dirty      : 1;
-    uint32_t unused     : 7;
-    uint32_t frame      : 20;
+  unsigned int present : 1;
+  unsigned int rw : 1;
+  unsigned int user : 1;
+  unsigned int writethru : 1;
+  unsigned int cachedisabled : 1;
+  unsigned int accessed : 1;
+  unsigned int dirty : 1;
+  unsigned int unused : 5;
+  unsigned int frame : 20;
 };
 
-// Paging function prototypes
-void *map_pages(void *vaddr, struct ppage *pglist, struct page_directory_entry *pd);
-void identity_map_kernel(struct page_directory_entry *pd, uint32_t end_kernel);
-void identity_map_stack(struct page_directory_entry *pd);
-void identity_map_video(struct page_directory_entry *pd);
-void loadPageDirectory(struct page_directory_entry *pd);
+extern struct ppage *free_page_list;
 
-#endif // PAGE_H
+void init_pfa_list(void); // Initialize the free physical page list
+struct ppage *allocate_physical_pages(unsigned int npages);
+void free_physical_pages(struct ppage *ppage_list);
+
+
+#endif
