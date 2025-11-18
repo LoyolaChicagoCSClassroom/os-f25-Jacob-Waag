@@ -24,9 +24,9 @@ SDIR = src
 
 OBJS = \
 	kernel_main.o \
-	io.o \
-	terminal.o \
 	page.o \
+	fatdriver.o \
+	fat.o \
 
 # Make sure to keep a blank line here after OBJS list
 
